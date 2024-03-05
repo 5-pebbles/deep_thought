@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 rocket = { version = "0.5", features = ["json"] }
+serde_yaml = "0.9.32"
+utoipa = { version = "4.2.0", features = ["rocket_extras", "yaml"] }
