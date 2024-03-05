@@ -5,6 +5,7 @@ use rocket::{
     launch, routes,
     serde::json::Json,
 };
+use std::{fs::File, io::Write, path::Path};
 use utoipa::{OpenApi, ToSchema};
 
 // Api
@@ -35,13 +36,32 @@ fn get_answer(question: Option<String>) -> Json<Answer> {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![get_answer, docs_yaml])
+    rocket::build()
+        .manage(generate_docs())
+        .mount("/", routes![get_answer, docs_yaml])
 }
 
 // Docs
 #[derive(OpenApi)]
 #[openapi(paths(get_answer, docs_yaml), components(schemas(Answer)))]
 struct ApiDoc;
+
+fn generate_docs() -> Result<(), String> {
+    let openapi = ApiDoc::openapi();
+    let yaml =
+        serde_yaml::to_string(&openapi).map_err(|e| format!("Failed to serialize docs: {}", e))?;
+
+    let path = Path::new("docs/openapi.yaml");
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)
+            .map_err(|e| format!("Failed to create directory: {}", e))?;
+    }
+    let mut file = File::create(path).map_err(|e| format!("Failed to create file: {}", e))?;
+    file.write_all(yaml.as_bytes())
+        .map_err(|e| format!("Failed to write to file: {}", e))?;
+
+    Ok(())
+}
 
 #[utoipa::path(
     get,
@@ -55,11 +75,10 @@ struct ApiDoc;
 )]
 #[get("/docs.yaml")]
 fn docs_yaml() -> Result<(ContentType, String), (Status, String)> {
-    let openapi = ApiDoc::openapi();
-    let yaml = serde_yaml::to_string(&openapi).map_err(|e| {
+    let yaml = std::fs::read_to_string("docs/openapi.yaml").map_err(|e| {
         (
             Status::InternalServerError,
-            format!("Failed to parse docs: {}", e),
+            format!("Failed to read docs: {}", e),
         )
     })?;
     Ok((ContentType::new("application", "x-yaml"), yaml))
