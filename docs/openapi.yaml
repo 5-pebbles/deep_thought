@@ -1,0 +1,54 @@
+openapi: 3.0.3
+info:
+  title: deep_thought
+  description: Answers to the Ultimate Question of Life, The Universe, and Everything in less then 7.5 million years
+  license:
+    name: ''
+  version: 0.1.0
+paths:
+  /answer:
+    get:
+      tags:
+      - crate
+      operationId: get_answer
+      parameters:
+      - name: question
+        in: query
+        description: The question to answer
+        required: false
+        schema:
+          type: string
+          nullable: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Answer'
+  /docs.yaml:
+    get:
+      tags:
+      - crate
+      operationId: docs_yaml
+      responses:
+        '200':
+          description: Success
+          content:
+            application/x-yaml:
+              schema:
+                type: string
+components:
+  schemas:
+    Answer:
+      type: object
+      required:
+      - question
+      - answer
+      properties:
+        answer:
+          type: integer
+          format: int32
+          minimum: 0
+        question:
+          type: string

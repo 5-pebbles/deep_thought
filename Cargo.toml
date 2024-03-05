@@ -2,6 +2,7 @@
 name = "deep_thought"
 version = "0.1.0"
 edition = "2021"
+description = "Answers to the Ultimate Question of Life, The Universe, and Everything in less then 7.5 million years"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
